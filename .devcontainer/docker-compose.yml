@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   workspace:
     image: mcr.microsoft.com/devcontainers/python:3.12
@@ -13,13 +12,10 @@ services:
       - AWS_ACCESS_KEY_ID=minio
       - AWS_SECRET_ACCESS_KEY=minio123
       - AWS_DEFAULT_REGION=us-east-1
-      - LABEL_STUDIO_USERNAME=admin
-      - LABEL_STUDIO_PASSWORD=admin
     depends_on:
       - minio
       - mlflow
       - labelstudio
-      - metaflowui
     ports:
       - 8888:8888
 
@@ -51,19 +47,6 @@ services:
     environment:
       - LABEL_STUDIO_USERNAME=admin
       - LABEL_STUDIO_PASSWORD=admin
-
-  metaflowui:
-    image: outerbounds/metaflow-ui:latest
-    ports:
-      - 3000:3000
-      - 8180:8180
-    environment:
-      - MFUI_API_HOST=0.0.0.0
-      - MFUI_API_PORT=8180
-      - MFUI_WEB_HOST=0.0.0.0
-      - MFUI_WEB_PORT=3000
-    volumes:
-      - metaflow_data:/data
 
 volumes:
   minio_data:
