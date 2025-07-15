@@ -1,0 +1,8 @@
+metaflow[aws,notebook]
+mlflow
+label-studio
+minio
+boto3
+jupyterlab
+pandas
+numpy
