@@ -21,23 +21,24 @@ services:
       - labelstudio
       - metaflowui
     ports:
-      - 8888:8888 # Jupyter
+      - 8888:8888
 
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2024-07-10T17-55-39Z
     command: server /data/minio --console-address ":9001"
     environment:
       - MINIO_ROOT_USER=minio
       - MINIO_ROOT_PASSWORD=minio123
     ports:
-      - 9000:9000   # S3 API
-      - 9001:9001   # Admin Console
+      - 9000:9000
+      - 9001:9001
     volumes:
       - minio_data:/data/minio
 
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.12.2
-    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root /workspace/mlruns
+    image: python:3.12
+    command: >
+      sh -c "pip install mlflow && mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root /workspace/mlruns"
     ports:
       - 5000:5000
     volumes:
@@ -52,7 +53,7 @@ services:
       - LABEL_STUDIO_PASSWORD=admin
 
   metaflowui:
-    image: ghcr.io/outerbounds/metaflow-ui:latest
+    image: outerbounds/metaflow-ui:latest
     ports:
       - 3000:3000
       - 8180:8180
