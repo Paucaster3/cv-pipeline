@@ -1,0 +1,70 @@
+version: "3.9"
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/python:3.12
+    command: sleep infinity
+    volumes:
+      - ..:/workspace:cached
+      - metaflow_data:/workspace/metaflow_data
+      - mlruns:/workspace/mlruns
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - METAFLOW_DATASTORE_SYSROOT_S3=s3://metaflow
+      - AWS_ACCESS_KEY_ID=minio
+      - AWS_SECRET_ACCESS_KEY=minio123
+      - AWS_DEFAULT_REGION=us-east-1
+      - LABEL_STUDIO_USERNAME=admin
+      - LABEL_STUDIO_PASSWORD=admin
+    depends_on:
+      - minio
+      - mlflow
+      - labelstudio
+      - metaflowui
+    ports:
+      - 8888:8888 # Jupyter
+
+  minio:
+    image: minio/minio:latest
+    command: server /data/minio --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio123
+    ports:
+      - 9000:9000   # S3 API
+      - 9001:9001   # Admin Console
+    volumes:
+      - minio_data:/data/minio
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.12.2
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root /workspace/mlruns
+    ports:
+      - 5000:5000
+    volumes:
+      - mlruns:/workspace/mlruns
+
+  labelstudio:
+    image: heartexlabs/label-studio:latest
+    ports:
+      - 8080:8080
+    environment:
+      - LABEL_STUDIO_USERNAME=admin
+      - LABEL_STUDIO_PASSWORD=admin
+
+  metaflowui:
+    image: ghcr.io/outerbounds/metaflow-ui:latest
+    ports:
+      - 3000:3000
+      - 8180:8180
+    environment:
+      - MFUI_API_HOST=0.0.0.0
+      - MFUI_API_PORT=8180
+      - MFUI_WEB_HOST=0.0.0.0
+      - MFUI_WEB_PORT=3000
+    volumes:
+      - metaflow_data:/data
+
+volumes:
+  minio_data:
+  mlruns:
+  metaflow_data:
